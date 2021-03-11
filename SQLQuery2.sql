@@ -96,7 +96,7 @@ ORDER BY p.WordCount desc;
 
 -- Which author(s) have the most poems? (Remember authors can have the same name.)
 
-SELECT a.Id, a.Name, count(p.Id) AS NumberOfPoems
+SELECT a.Id, a.Name, COUNT(p.Id) AS NumberOfPoems
 FROM Author a
 	JOIN Poem p on a.Id = p.AuthorId
 GROUP BY a.Id, a.Name
@@ -105,20 +105,53 @@ ORDER BY NumberOfPoems desc
 
 -- How many poems have an emotion of sadness?
 
-SELECT count(pe.Id) AS SadPoems
+SELECT COUNT(pe.Id) AS SadPoems
 FROM PoemEmotion pe
 	LEFT JOIN Emotion e ON pe.EmotionId = e.Id
 WHERE Name = 'Sadness'
 
 -- How many poems are not associated with any emotion?
 
-SELECT count (p.Id) As NullPoems
-FROM PoemEmotion
+SELECT Name, COUNT(p.Id)
+FROM Poem p
+	LEFT JOIN PoemEmotion pe ON p.Id = pe.PoemId
+	LEFT JOIN Emotion e ON pe.EmotionId = e.Id
+WHERE Name IS NULL
+GROUP BY Name
 
 -- Which emotion is associated with the least number of poems?
+
+SELECT Top 1 Name, COUNT(p.Id) AS NumOfPoems
+FROM Poem p
+	LEFT JOIN PoemEmotion pe ON p.Id = pe.PoemId
+	LEFT JOIN Emotion e ON pe.EmotionId = e.Id
+WHERE Name IS NOT NULL
+GROUP BY Name
+ORDER BY NumOfPoems asc;
+
 
 
 -- Which grade has the largest number of poems with an emotion of joy?
 
+SELECT TOP 1 g.Name AS GradeName, e.Name AS EmotionName, Count(p.Id)
+FROM Poem p
+	LEFT JOIN PoemEmotion pe ON p.Id = pe.PoemId
+	LEFT JOIN Emotion e ON pe.EmotionId = e.Id
+	LEFT JOIN Author a ON p.AuthorId = a.Id
+	LEFT JOIN Grade g ON a.GradeId = g.Id
+WHERE e.Name = 'Joy'
+GROUP BY g.Name, e.Name
+ORDER BY G.Name desc;
+	
 
 -- Which gender has the least number of poems with an emotion of fear?
+
+SELECT TOP 1 g.Name AS GenderName, e.Name AS EmotionName, Count(p.Id)
+FROM Poem p
+	LEFT JOIN PoemEmotion pe ON p.Id = pe.PoemId
+	LEFT JOIN Emotion e ON pe.EmotionId = e.Id
+	LEFT JOIN Author a ON p.AuthorId = a.Id
+	LEFT JOIN Gender g ON a.GenderId = g.Id
+WHERE e.Name = 'Fear'
+GROUP BY g.Name, e.Name
+ORDER BY G.Name asc;
